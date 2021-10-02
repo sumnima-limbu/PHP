@@ -1,126 +1,187 @@
+<?php
+$name = "";
+$email = "";
+$phone_no = "";
+$gender = "";
+$hobbies = [];
+$errors = [];
+$checked_hobby = "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (empty($_POST["name"])) {
+        $errors['name'] = "Name is required";
+    } else {
+        $name = sanitize_input($_POST["name"]);
+    }
+
+    $v_Email = $_POST["email"];
+    if (empty($v_Email)) {
+        $errors['email'] = "Email is required";
+    } else if (!filter_var($v_Email, FILTER_VALIDATE_EMAIL)) {
+        $errors['email'] ="Invalid email format";
+    }
+    else {
+        $email = sanitize_input($v_Email);
+    }
+
+    if (empty($_POST["phone_no"])) {
+        $errors['phone_no'] = "Phone Number is required";
+    /* } else if (strlen($_POST["phone_no"]) < 10) { */
+    /*     $erros['phone_no'] = "Phone number should be of 10 digits"; */
+    } 
+    else if (!preg_match("/^98[0-9]{8}$/", $_POST["phone_no"])) {
+        $errors['phone_no'] = "Invalid Phone number, must start with 98..";              
+    } else {
+        $phone_no = sanitize_input($_POST['phone_no']);
+    }
+    
+
+    if (empty($_POST["gender"])) {
+        $errors['gender']= "Gender is required";
+    } else {
+        $gender = sanitize_input($_POST["gender"]);
+    }
+
+    $checked_hobby = count($_POST['hobbies']);
+    if ($checked_hobby < 1) {
+        $errors['hobbies'] = "Please check at least one Hobby";
+    } else if ($checked_hobby >= 5) {
+        $errors['hobbies'] = "You can only check up to four Hobbies";
+    } else {
+        foreach ($_POST['hobbies'] as $hobby) {
+            $hobbies[] = sanitize_input($hobby);
+        }
+    }
+
+}
+
+function sanitize_input($data){
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+
+    return $data;
+}
+?>
+
+
 <!DOCTYPE html>
 <head>
     <style>
-        .error{
+        body {
+            font-family: "Arial", Sans-serif;
+        }
+
+        .error {
             color: #FF0000;
         }
+
+        .success {
+            color: green;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            margin: 10px auto;
+        }
+
+        .label{
+            font-weight: bold;
+        }
+
+        form {
+            width: 100%;
+            border: 1px solid lightgray;
+            padding: 25px;
+        }
+
+        .form-group {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
     </style>
 </head>
 <body>
-    <div>
-    <?php
-    $nameErr = $emailErr = $phoneErr = $genderErr  = $hobbiesErr = "";
-    $name = $email = $phone = $gender = $hobbies = $values = "";
-
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        if (empty($_POST["name"])) {
-            $nameErr = "Name is required";
-        } else {
-            $name = test_input($_POST["name"]);
-        }
-
-        $v_Email = $_POST["email"];
-        if (empty($v_Email)) {
-            $emailErr = "Email is required";
-        } 
-        else if (!filter_var($v_Email, FILTER_VALIDATE_EMAIL)) {
-            $emailErr ="Invalid email format";
-        }
-        else {
-            $email = test_input($v_Email);
-        }
-
-        if (empty($_POST["phoneno"])) {
-            $phoneErr = "Phone Number is required";
-        }
-         else if (strlen($_POST["phoneno"]) < 10) {
-            $phoneErr = "Phone number should be of 10 digits";
-        } 
-        else if (!preg_match("/^[0-9]\d{10}$/", $_POST["phoneno"])) {
-            $phoneErr = "Invalid Phone number";              
-        } 
-        
-
-        if (empty($_POST["gender"])) {
-            $genderErr = "Gender is required";
-        } else {
-            $gender = test_input($_POST["gender"]);
-        }
-
-        $checkedHobby = 0;
-        
-        $values = $_POST['web'];
-
-        $checkedHobby = count($values);
-
-        if ($checkedHobby < 1) {
-            $hobbiesErr = "Please check at least one Hobby";
-        } else if ($checkedHobby >= 5) {
-            $hobbiesErr = "You can only check up to four Hobbies";
-        } else {
-            $hobbies = test_input($_POST["web"]);
-        }
-
-    }
-
-    function test_input($data){
-        $data = trim($data);
-        $data = stripslashes($data);
-        $data = htmlspecialchars($data);
-        return $data;
-    }
-    ?>
-
-    </div>
-    <div>
+    <div class="container">
         <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]);?>">
-            <div class="container">
-                <h1>Form Validation</h1>
-                <p>Please fill up the form with correct values only.</p>
-                <p><span class="error">* required field</span></p>
-                <b>Name:</b><input type="text" name="name" minlength="5">
-                <span class="error">* <?php echo $nameErr;?></span>
-                <br><br>
+            <h1>Form Validation</h1>
+            <p>Please fill up the form with correct values only.</p>
 
-                <b>Email:</b> <input type="text" name="email">
-                <span class="error">* <?php echo $emailErr;?></span>
-                <br><br>
+            <?php if(! empty($errors)): ?>
+                <p><span class="error">Something went wrong.</span></p>
+                <?php endif; ?>
+            
+            <?php if(! empty($_POST) && empty($errors)): ?>
+                <p><span class="success">Form was submitted successfully.</span></p>
+            <?php endif; ?>
 
-                <b>Phone:</b><input type="text" name="phoneno">
-                <span class="error">* <?php echo $phoneErr;?></span>
-                <br><br>
+            <div class="form-group">
+                <label class="label">Name:
+                    <input type="text" name="name" minlength="5" />
+                </label>
+                <?php if (isset($errors['name'])): ?>
+                    <span class="error"><?php echo $errors['name'];?></span>
+                <?php endif; ?>
+            </div>
 
-                <b>Gender:</b>
-                <input type="radio" name="gender" value="female">Female
-                <input type="radio" name="gender" value="male">Male
-                <input type="radio" name="gender" value="other">Other
-                <span class="error">* <?php echo $genderErr;?></span>
-                <br><br>
+            <div class="form-group">
+                <label class="label">Email:
+                    <input type="text" name="email" />
+                </label>
+                <?php if (isset($erros['email'])): ?>
+                    <span class="error"> <?php echo $errors['email'];?></span>
+                <?php endif; ?>
+            </div>
 
-                <b>Hobbies: </b>
-                <input type="checkbox" name="web[1]" value="read">Reading
-                <input type="checkbox" name="web[2]" value="travel">Travelling
-                <input type="checkbox" name="web[3]" value="music">Listening to Music
-                <input type="checkbox" name="web[4]" value="game">Gaming
-                <span class="error">* <?php echo $hobbiesErr; ?></span>
-                <br><br>
+            <div class="form-group">
+                <label class="label">Phone:
+                    <input type="text" name="phone_no">
+                </label>
+                <?php if (isset($errors['phone_no'])): ?>
+                    <span class="error"><?php echo $errors['phone_no'];?></span>
+                <?php endif; ?>
+            </div>
+
+            <div class="form-group">
+                <span class="label">Gender: </span>
+                <label><input type="radio" name="gender" value="female">Female</label>
+                <label><input type="radio" name="gender" value="male">Male</label>
+                <label><input type="radio" name="gender" value="other">Other</label>
+                <?php if(isset($errors['gender'])): ?>
+                    <span class="error"><?php echo $errors['gender'];?></span>
+                <?php endif; ?>
+            </div>
+
+            <div class="form-group">
+                <span class="label">Hobbies: </span>
+                <label><input type="checkbox" name="hobbies[]" value="Reading">Reading</label>
+                <label><input type="checkbox" name="hobbies[]" value="Travelling">Travelling</label>
+                <label><input type="checkbox" name="hobbies[]" value="Music">Listening to Music</label>
+                <label><input type="checkbox" name="hobbies[]" value="Game">Gaming</label>
+                <?php if(isset($errors['hobbies'])): ?>
+                    <span class="error"><?php echo $errors['hobbies']; ?></span>
+                <?php endif; ?>
+            </div>
                 
-                <input type="submit" name="submit" value="Submit">
+            <input type="submit" name="submit" value="Submit">
         </form> 
-    </div> 
-    <div>
-    <?php
-        echo "<h3>Your Input:</h3>";
-        echo "Name: ".$name;
-        echo "<br>";
-        echo "Email: ".$email;
-        echo "<br>";
-        echo "Phone Number: ".$phone;
-        echo "<br>";
-        echo "Gender: ".$gender;
-        echo "<br>";
-        echo 'Checked Hobbies: '.var_dump($values);
-        ?>
+    
+    
+        <?php
+            echo "<h3>Your Input:</h3>";
+            echo "Name: ". $name;
+            echo "<br>";
+            echo "Email: ". $email;
+            echo "<br>";
+            echo "Phone Number: ". $phone_no;
+            echo "<br>";
+            echo "Gender: ". $gender;
+            echo "<br>";
+            echo 'Checked Hobbies: '. implode(',' , $hobbies);
+            ?>
     </div>   
 </body>
 </html>
