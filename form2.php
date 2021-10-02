@@ -7,21 +7,22 @@ $hobbies = [];
 $errors = [];
 $checked_hobby = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (empty($_POST["name"])) {
         $errors['name'] = "Name is required";
     } else {
         $name = sanitize_input($_POST["name"]);
     }
 
-    $v_Email = $_POST["email"];
-    if (empty($v_Email)) {
+    $v_email = $_POST["email"];
+    if (empty($v_email)) {
         $errors['email'] = "Email is required";
-    } else if (!filter_var($v_Email, FILTER_VALIDATE_EMAIL)) {
+    } else if (!filter_var($v_email, FILTER_VALIDATE_EMAIL)) {
         $errors['email'] ="Invalid email format";
     }
     else {
-        $email = sanitize_input($v_Email);
+        $email = sanitize_input($v_email);
     }
 
     if (empty($_POST["phone_no"])) {
@@ -42,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $gender = sanitize_input($_POST["gender"]);
     }
 
-    $checked_hobby = count($_POST['hobbies']);
+    $checked_hobby = isset($_POST['hobbies']) ? count($_POST['hobbies']) : 0;
     if ($checked_hobby < 1) {
         $errors['hobbies'] = "Please check at least one Hobby";
     } else if ($checked_hobby >= 5) {
@@ -131,7 +132,7 @@ function sanitize_input($data){
                 <label class="label">Email:
                     <input type="text" name="email" />
                 </label>
-                <?php if (isset($erros['email'])): ?>
+                <?php if (isset($errors['email'])): ?>
                     <span class="error"> <?php echo $errors['email'];?></span>
                 <?php endif; ?>
             </div>
@@ -172,15 +173,15 @@ function sanitize_input($data){
     
         <?php
             echo "<h3>Your Input:</h3>";
-            echo "Name: ". $name;
+            echo "Name            : ". $name;
             echo "<br>";
-            echo "Email: ". $email;
+            echo "Email           : ". $email;
             echo "<br>";
-            echo "Phone Number: ". $phone_no;
+            echo "Phone Number    : ". $phone_no;
             echo "<br>";
-            echo "Gender: ". $gender;
+            echo "Gender          : ". $gender;
             echo "<br>";
-            echo 'Checked Hobbies: '. implode(',' , $hobbies);
+            echo 'Checked Hobbies : '. implode(',' , $hobbies);
             ?>
     </div>   
 </body>
